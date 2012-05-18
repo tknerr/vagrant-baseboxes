@@ -1,0 +1,9 @@
+
+# postinstall.sh is now a derived artifact (from postinstall.sh.erb)
+definitions/*/postinstall.sh
+
+# ignore the 'binaries' built from the definitions
+boxes/*.box
+
+# ignore downloaded iso files
+iso/*.iso

@@ -1,0 +1,71 @@
+
+# given versions
+RUBY_INSTALL_VERSION="<%= versions[:ruby] %>"
+RUBYGEMS_INSTALL_VERSION="<%= versions[:gems] %>"
+CHEF_INSTALL_VERSION="<%= versions[:chef] %>"
+
+# derived versions
+RUBY_INSTALL_MAJOR_VERSION=$(echo $RUBY_INSTALL_VERSION | cut -c1-3)
+VBOX_INSTALL_VERSION=$(cat /home/vagrant/.vbox_version)
+
+echo "using \$RUBY_INSTALL_VERSION=$RUBY_INSTALL_VERSION"
+echo "using \$RUBYGEMS_INSTALL_VERSION=$RUBYGEMS_INSTALL_VERSION"
+echo "using \$CHEF_INSTALL_VERSION=$CHEF_INSTALL_VERSION"
+
+
+# TODO: this is ubuntu/debian specific - can we get rid of it?
+#		- e.g. just let it always be in the original postinstall.sh?
+#		- or do we really need it? are shared folders mounted via NFS?
+# Install NFS client (for mounting VBox shares via NFS)
+# apt-get -y install nfs-common
+
+
+# Install Ruby from source in /opt so that users of Vagrant
+# can install their own Rubies using packages or however.
+# Note: Puppet doesn't support Ruby 1.9 yet.
+wget http://ftp.ruby-lang.org/pub/ruby/$RUBY_INSTALL_MAJOR_VERSION/ruby-$RUBY_INSTALL_VERSION.tar.gz
+tar xvzf ruby-$RUBY_INSTALL_VERSION.tar.gz
+cd ruby-$RUBY_INSTALL_VERSION
+./configure --prefix=/opt/ruby
+make
+make install
+cd ..
+rm -rf ruby-$RUBY_INSTALL_VERSION*
+
+
+# Install RubyGems
+wget http://production.cf.rubygems.org/rubygems/rubygems-$RUBYGEMS_INSTALL_VERSION.tgz
+tar xzf rubygems-$RUBYGEMS_INSTALL_VERSION.tgz
+cd rubygems-$RUBYGEMS_INSTALL_VERSION
+/opt/ruby/bin/ruby setup.rb
+cd ..
+rm -rf rubygems-$RUBYGEMS_INSTALL_VERSION*
+
+
+# Installing chef and puppet
+/opt/ruby/bin/gem install chef --version $CHEF_INSTALL_VERSION --no-ri --no-rdoc
+/opt/ruby/bin/gem install puppet --no-ri --no-rdoc
+
+
+# TODO: is /etc/profile.d/ ubuntu specific?!?
+# Add /opt/ruby/bin to the global path as the last resort so
+# Ruby, RubyGems, and Chef are visible
+echo 'PATH=$PATH:/opt/ruby/bin/'> /etc/profile.d/vagrantruby.sh
+
+
+# Installing the virtualbox guest additions
+cd /tmp
+wget http://download.virtualbox.org/virtualbox/$VBOX_INSTALL_VERSION/VBoxGuestAdditions_$VBOX_INSTALL_VERSION.iso
+mount -o loop VBoxGuestAdditions_$VBOX_INSTALL_VERSION.iso /mnt
+sh /mnt/VBoxLinuxAdditions.run
+umount /mnt
+rm VBoxGuestAdditions_$VBOX_INSTALL_VERSION.iso
+
+
+# Installing vagrant keys
+mkdir /home/vagrant/.ssh
+chmod 700 /home/vagrant/.ssh
+cd /home/vagrant/.ssh
+wget --no-check-certificate 'http://github.com/mitchellh/vagrant/raw/master/keys/vagrant.pub' -O authorized_keys
+chmod 600 /home/vagrant/.ssh/authorized_keys
+chown -R vagrant /home/vagrant/.ssh
