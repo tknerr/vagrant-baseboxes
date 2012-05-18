@@ -1,16 +1,16 @@
 
 # Veewee Basebox Definitions
 
-Some Veewee based basebox definitions for building (a) 'Vagrant' baseboxes and (b) 'Bare OS' baseboxes.
+Some Veewee based basebox definitions for building 'Vagrant' baseboxes and 'Bare OS' baseboxes.
 
-(a) 'Vagrant' baseboxes already contain Ruby, Gems, Chef, Puppet and VirtualBox Guest Additions and are for development on your local machine when using Vagrant.
-(b) 'Bare OS' baseboxes contain nothing but the bare operating system and can be used for bootstrapping with `knife bootrap`
+ * 'Vagrant' baseboxes already contain Ruby, Gems, Chef, Puppet and VirtualBox Guest Additions and are for development on your local machine when using Vagrant.
+ * 'Bare OS' baseboxes contain nothing but the bare operating system and can be used for bootstrapping with `knife bootrap`
 
 The two kinds of baseboxes are built from the same Veewee definition. This is achieved by templating the `definitions/<my-def>/postinstall.sh.erb` file and conditionally including either `common/custom-install-commands-bare-os.sh.erb` or `custom-install-commands-vagrant.sh.erb`.
 
 See also:
-https://github.com/jedi4ever/veewee
-http://vagrantup.com/docs/base_boxes.html
+ * https://github.com/jedi4ever/veewee
+ * http://vagrantup.com/docs/base_boxes.html
 
 # Usage
 
